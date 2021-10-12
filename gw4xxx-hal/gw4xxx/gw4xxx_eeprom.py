@@ -173,16 +173,29 @@ def writeGW4x00SpecificSection(eepromFile, specificData):
         f.close()
  
 def writeMainBoardEEPROM(commonSection, specificSection=None):
+    if commonSection != None:
     # all parameters set -> write whole section
-    if GW4xxxCommonSectionContent <= set(commonSection):
-        writeCommonSection(MAIN_BOARD_EEPROM, commonSection)    
-    else:    # not all parameters set -> update section
-        theData = readMainBoardEEPROM()
-        theData.update(commonSection)
-        writeCommonSection(MAIN_BOARD_EEPROM, theData)    
+        if GW4xxxCommonSectionContent <= set(commonSection):
+            writeCommonSection(MAIN_BOARD_EEPROM, commonSection)    
+        else:    # not all parameters set -> update section
+            theData = readMainBoardEEPROM()
+            theData.update(commonSection)
+            writeCommonSection(MAIN_BOARD_EEPROM, theData)    
 
     if specificSection != None:
         if GW4x00SpecificSectionContent <= set(specificSection):
             writeGW4x00SpecificSection(MAIN_BOARD_EEPROM, specificSection)
         else:   # only one parameter defined so skip this for now
             pass
+
+def writeExpansionBoardEEPROM(commonSection, specificSection=None):
+    if commonSection != None:
+        # all parameters set -> write whole section
+        if GW4xxxCommonSectionContent <= set(commonSection):
+            writeCommonSection(EXPANSION_BOARD_EEPROM, commonSection)    
+        else:    # not all parameters set -> update section
+            theData = readExpansionBoardEEPROM()
+            theData.update(commonSection)
+            writeCommonSection(EXPANSION_BOARD_EEPROM, theData)    
+
+    # no expansion boards with specific section defined yet so ignore parameter
