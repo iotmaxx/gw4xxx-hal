@@ -22,10 +22,22 @@ from struct import *
 from crccheck.crc import Crc32
 from .exceptions import *
 
-EEPROM_MAGIC            = 0xc4ec31b6
-EEPROM_SIZE             = 8*1024
+EEPROM_MAGIC                    = 0xc4ec31b6
+EEPROM_SIZE                     = 8*1024
+EEPROM_COMMON_SECTION_SIZE      = 256
+EEPROM_SPECIFIC_SECTION_SIZE    = 256
 MAIN_BOARD_EEPROM       = '/sys/bus/i2c/devices/2-0050/eeprom'
 EXPANSION_BOARD_EEPROM  = '/sys/bus/i2c/devices/3-0050/eeprom'
+
+GW4xxxCommonSectionContent = { "Product", "ProductName", "SerialNumber", "Version", "Manufacturer", "TimeOfProduction" ,"Tester", "TestResult", "TimeOfTest", "OverlayName" }
+GW4x00SpecificSectionContent = { "MAC" }
+
+sectionHeaderFormat = 'II'
+commonDataFormat = '16sI4s16s16sBIBBI'
+specificDataFormat = '6s'
+versionDataFormat = '3Bx'
+
+
 
 def hasExpansionBoard():
     return os.path.isfile(EXPANSION_BOARD_EEPROM) 
@@ -39,12 +51,11 @@ def readEEPROM(eepromFile):
         f.close()
 
     return eeprom
+  
 
 def decodeCommonSection(eeprom):
-    commonDataFormat = 'II16sI4s16s16sBIBBI'
-
-    commonData = eeprom[:calcsize(commonDataFormat)]
-    u32Magic, u32Checksum, caOverlayName, u32Product, uVersion, caProductName, caSerialNumber, u8Manufacturer, u32TimeOfProduction, u8Tester, u8TestResult, u32TimeOfTest = unpack(commonDataFormat, commonData)
+    commonData = eeprom[:calcsize(sectionHeaderFormat+commonDataFormat)]
+    u32Magic, u32Checksum, caOverlayName, u32Product, uVersion, caProductName, caSerialNumber, u8Manufacturer, u32TimeOfProduction, u8Tester, u8TestResult, u32TimeOfTest = unpack(sectionHeaderFormat+commonDataFormat, commonData)
     u8Major, u8Minor, u8Build = unpack('3Bx', uVersion)
 
     if u32Magic != EEPROM_MAGIC:
@@ -88,10 +99,9 @@ def decodeCommonSection(eeprom):
 #    print()
 
 def decodeGW4x00SpecificSection(eeprom):
-    specificDataFormat = 'II6s'
 
-    specificData = eeprom[256:256+calcsize(specificDataFormat)]
-    u32Magic, u32Checksum, u8aMac = unpack(specificDataFormat, specificData)
+    specificData = eeprom[256:256+calcsize(sectionHeaderFormat+specificDataFormat)]
+    u32Magic, u32Checksum, u8aMac = unpack(sectionHeaderFormat+specificDataFormat, specificData)
 
     if u32Magic != EEPROM_MAGIC:
         raise WrongMagicError
@@ -116,20 +126,63 @@ def decodeGW4x00SpecificSection(eeprom):
 
 def readExpansionBoardEEPROM():
     eepromData = readEEPROM(EXPANSION_BOARD_EEPROM)
-    theData = decodeCommonSection(eepromData)
-
-    return theData
+    return decodeCommonSection(eepromData)
 
 def readMainBoardEEPROM():
     eepromData = readEEPROM(MAIN_BOARD_EEPROM)
     theData = decodeCommonSection(eepromData)
     theData.update(decodeGW4x00SpecificSection(eepromData))
-
     return theData
-
 
 def readDeviceData():
     theData = { "Main" : readMainBoardEEPROM() }
     if hasExpansionBoard():
         theData["Expansion"] = readExpansionBoardEEPROM()
     return theData
+
+def writeCommonSection(eepromFile, commonData):
+    myData = bytearray(b'\xFF') * EEPROM_COMMON_SECTION_SIZE
+    pack_into(commonDataFormat, myData, 8, 
+        commonData['OverlayName'].encode(), 
+        commonData['Product'], 
+        pack(versionDataFormat, commonData['Version'][0], commonData['Version'][1], commonData['Version'][2]), 
+        commonData['ProductName'].encode(), 
+        commonData['SerialNumber'].encode(), 
+        commonData['Manufacturer'], 
+        commonData['TimeOfProduction'], 
+        commonData['Tester'], 
+        commonData['TestResult'], 
+        commonData['TimeOfTest']
+    )
+    u32CRC = Crc32.calc(myData[8:EEPROM_COMMON_SECTION_SIZE])
+    pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
+    with open(eepromFile, "wb+") as f:
+        f.write(myData)
+        f.close()
+
+def writeGW4x00SpecificSection(eepromFile, specificData):
+    myData = bytearray(b'\xFF') * EEPROM_SPECIFIC_SECTION_SIZE
+    pack_into(specificDataFormat, myData, 8, 
+        bytearray(specificData['MAC'])
+    )
+    u32CRC = Crc32.calc(myData[8:EEPROM_SPECIFIC_SECTION_SIZE])
+    pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
+    with open(eepromFile, "wb+") as f:
+        f.seek(EEPROM_COMMON_SECTION_SIZE,0)
+        f.write(myData)
+        f.close()
+ 
+def writeMainBoardEEPROM(commonSection, specificSection=None):
+    # all parameters set -> write whole section
+    if GW4xxxCommonSectionContent <= set(commonSection):
+        writeCommonSection(MAIN_BOARD_EEPROM, commonSection)    
+    else:    # not all parameters set -> update section
+        theData = readMainBoardEEPROM()
+        theData.update(commonSection)
+        writeCommonSection(MAIN_BOARD_EEPROM, theData)    
+
+    if specificSection != None:
+        if GW4x00SpecificSectionContent <= set(specificSection):
+            writeGW4x00SpecificSection(MAIN_BOARD_EEPROM, specificSection)
+        else:   # only one parameter defined so skip this for now
+            pass
