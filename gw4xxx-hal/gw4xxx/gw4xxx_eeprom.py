@@ -131,7 +131,7 @@ def readExpansionBoardEEPROM():
 def readMainBoardEEPROM():
     eepromData = readEEPROM(MAIN_BOARD_EEPROM)
     theData = decodeCommonSection(eepromData)
-    theData.update(decodeGW4x00SpecificSection(eepromData))
+    theData.update(decodeGW4x00SpecificSection(eepromData)) 
     return theData
 
 def readDeviceData():
