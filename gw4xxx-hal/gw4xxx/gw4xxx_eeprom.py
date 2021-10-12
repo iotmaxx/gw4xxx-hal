@@ -116,7 +116,7 @@ def decodeGW4x00SpecificSection(eeprom):
  #   print('MAC:                 {:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}'.format(u8aMac[0],u8aMac[1],u8aMac[2],u8aMac[3],u8aMac[4],u8aMac[5]))
 
 #    dataBlock = eeprom[256+8:256+256]
-#    print("CRC32: 0x{:08x}".format(Crc32.calc(dataBlock)))
+#    print("CRC32: 0x{:08x}".format(Crc32.calc(dataBlock))) 
 
     theData = {
         "MAC" : [ u8aMac[0],u8aMac[1],u8aMac[2],u8aMac[3],u8aMac[4],u8aMac[5] ]
