@@ -1,5 +1,6 @@
 import gw4xxx.gw4xxx_eeprom
-
+import gw4x90.currentLoopControl
+import sys 
 
 gw4100CommonData = {
     'SerialNumber': 'GW00002086',
@@ -29,6 +30,19 @@ gw4x01CommonData = {
     'TestResult': 1, 
     'TimeOfTest': 1619450598, 
     'OverlayName': 'sensexp01'
+}
+
+gw4x99CommonData = {
+    'Product': 240, 
+    'ProductName': 'GW4x99', 
+    'SerialNumber': 'none', 
+    'Version': [1, 1, 0], 
+    'Manufacturer': 3, 
+    'TimeOfProduction': 1609455600, 
+    'Tester': 0, 
+    'TestResult': 0, 
+    'TimeOfTest': 0, 
+    'OverlayName': 'none'
 }
 
 gw4x01CommonDataTest1 = {
@@ -61,17 +75,24 @@ gw4100CommonDataTest1 = {
 
 
 
-print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
+#print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
 
-gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x01CommonDataTest1)
+#gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x99CommonData)
 
-print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
+#print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
 
-gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x01CommonDataTest2)
+#gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x01CommonDataTest2)
 
-print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
+#print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
 
-gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x01CommonData)
+#gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x01CommonData)
 
-print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
+#print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
 
+gw4x90.currentLoopControl.setOutputCurrent(int(sys.argv[1]),float(sys.argv[2]))
+
+print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
+
+gw4x90.currentLoopControl.powerDownChannel(int(sys.argv[1]))
+
+print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
