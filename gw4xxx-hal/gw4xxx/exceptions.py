@@ -14,4 +14,8 @@ class ChecksumError(GW4xxxError):
     """Raised when the EEPROM checksum number is wrong (e.g. EEPROM not programmed)"""
     pass
 
+class ChannelPoweredDownError(GW4xxxError):
+    """Raised when accessed AD channel is in power down mode"""
+    pass
+
 
