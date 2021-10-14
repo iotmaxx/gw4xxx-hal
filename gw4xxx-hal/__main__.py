@@ -1,4 +1,5 @@
 import gw4xxx.gw4xxx_eeprom
+import gw4x90.analogIOControl
 import gw4x90.currentLoopControl
 import sys 
 
@@ -89,10 +90,15 @@ gw4100CommonDataTest1 = {
 
 #print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
 
-gw4x90.currentLoopControl.setOutputCurrent(int(sys.argv[1]),float(sys.argv[2]))
+#gw4x90.currentLoopControl.setOutputCurrent(int(sys.argv[1]),float(sys.argv[2]))
 
-print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
+#print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
 
-gw4x90.currentLoopControl.powerDownChannel(int(sys.argv[1]))
+#gw4x90.currentLoopControl.powerDownChannel(int(sys.argv[1]))
 
-print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
+#print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
+
+# gw4x90.analogIOControl.setVoltage(int(sys.argv[1]), int(sys.argv[2]), float(sys.argv[3]))
+
+gw4x90.currentLoopControl.setOutputCurrent(0,float(sys.argv[1]))
+print(gw4x90.analogIOControl.readCurrentLoopInput())
