@@ -2,6 +2,7 @@ import gw4xxx.gw4xxx_eeprom
 import gw4x90.analogIOControl
 import gw4x90.currentLoopControl
 import gw4x90.digitalInputControl
+import gw4x00.digitalIOControl
 import sys 
 
 gw4100CommonData = {
@@ -99,7 +100,17 @@ gw4100CommonDataTest1 = {
 
 #print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
 
-gw4x90.analogIOControl.setVoltage(1, 2, float(sys.argv[1]))
-print (gw4x90.digitalInputControl.getInput(0))
+#gw4x90.analogIOControl.setVoltage(1, 2, float(sys.argv[1]))
+#print (gw4x90.digitalInputControl.getInput(0))
 #gw4x90.currentLoopControl.setOutputCurrent(0,float(sys.argv[1]))
 #print(gw4x90.analogIOControl.readCurrentLoopInput())
+
+inputs = []
+for i in range(4):
+    inputs.append(gw4x00.digitalIOControl.GW4100Input(i))
+
+gw4x90.analogIOControl.setVoltage(2, 0, float(sys.argv[1]))
+gw4x90.analogIOControl.setVoltage(2, 1, float(sys.argv[2]))
+gw4x90.analogIOControl.setVoltage(2, 2, float(sys.argv[3]))
+gw4x90.analogIOControl.setVoltage(2, 3, float(sys.argv[4]))
+print('Inputs: {},{},{},{}'.format(inputs[0].getInput(),inputs[1].getInput(),inputs[2].getInput(),inputs[3].getInput()))
