@@ -1,7 +1,9 @@
 from smbus2 import SMBus, i2c_msg
+import time
 
 i2c_bus = 3
 i2c_MCP4728_addresses = [ 0x65, 0x66, 0x67, 0x64 ]
+i2c_ADS1015_address = 0x48
 
 def check_valid_chip_channel(func):
     def inner(chip, channel, *args, **kwargs):
@@ -33,3 +35,56 @@ def setVoltage(chip, channel, voltage):
         msg = i2c_msg.write(i2c_MCP4728_addresses[chip], data)
         bus.i2c_rdwr(msg)
 
+# ADS1015 read analog voltage on ADC input
+# [15]:     1           start conversion
+# [14:12]:100+<ch>      convert channel <ch>
+# [11:9]: 001           FSR: +-4.096V
+# [8]:      1           single shot mode
+# [7:5]:  100           1600 SPS (default)
+# [4]:      0           Traditional comparator (default)
+# [3]:      0           Comperator active low (default)
+# [2]:      0           Nonlatching comparator. The ALERT/RDY pin does not latch when asserted (default)
+# [1:0]    11           Disable comparator and set ALERT/RDY pin to high-impedance (default)
+def _readAnalogChannelRaw(channel):
+    if channel >= 4:
+        raise IndexError
+
+    with SMBus(i2c_bus) as bus:
+#        hex_string = "".join("%02x " % b for b in data)
+#        print("write: "+hex_string)
+        data = [ 0x01, 0b11000011 | (channel<<4), 0b10000011 ]  # single conversion
+        msg = i2c_msg.write(i2c_ADS1015_address, data)
+        bus.i2c_rdwr(msg)
+        time.sleep(0.1)
+        data = [ 0x00 ]                                         # select conversion register
+        msg = i2c_msg.write(i2c_ADS1015_address, data)
+        bus.i2c_rdwr(msg)
+        msg = i2c_msg.read(i2c_ADS1015_address, 2)
+        bus.i2c_rdwr(msg)
+    bytesRead = list(msg)
+    value = (bytesRead[0]<<4) | (bytesRead[1]>>4)
+    value /= 500
+    return value
+
+def readGPIOVoltage(GPIOChannel):
+    if GPIOChannel == 0:
+        value = _readAnalogChannelRaw(2)
+    elif GPIOChannel == 1:
+        value = _readAnalogChannelRaw(3)
+    else:
+        raise IndexError
+
+    # factor in 68k/10k resistor divider
+    value *= 78
+    value /= 10
+    return value
+
+def readOneWireVoltage():
+    return _readAnalogChannelRaw(1)*2
+
+# get current loop input voltage in mA
+def readCurrentLoopInput():
+    value = _readAnalogChannelRaw(0)
+    # with 75R shunt resistor
+    value *= 1000/75
+    return value
