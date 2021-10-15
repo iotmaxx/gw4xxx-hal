@@ -119,7 +119,8 @@ print('Inputs: {},{},{},{}'.format(inputs[0].getInput(),inputs[1].getInput(),inp
  """
 # GW4100 GPI test end
 
-# set analog tester outputs to 0 (mandatory)
+# GW4100 GPIO test start
+""" # set analog tester outputs to 0 (mandatory)
 gw4x90.analogIOControl.setVoltage(1, 0, 0)
 gw4x90.analogIOControl.setVoltage(1, 1, 0)
 
@@ -164,3 +165,6 @@ print('GW4100 Inputs: {},{}'.format(gpios[0].getInput(),gpios[1].getInput() ))
 
 gw4x90.analogIOControl.setVoltage(1, 0, 0)
 gw4x90.analogIOControl.setVoltage(1, 1, 0)
+ """
+ # GW4100 GPIO test end
+gw4xxx.gw4xxx_eeprom.getDeviceType()
