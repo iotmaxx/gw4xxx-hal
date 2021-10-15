@@ -105,12 +105,62 @@ gw4100CommonDataTest1 = {
 #gw4x90.currentLoopControl.setOutputCurrent(0,float(sys.argv[1]))
 #print(gw4x90.analogIOControl.readCurrentLoopInput())
 
+# GW4100 GPI test start
+""" 
 inputs = []
 for i in range(4):
     inputs.append(gw4x00.digitalIOControl.GW4100Input(i))
 
-gw4x90.analogIOControl.setVoltage(2, 0, float(sys.argv[1]))
-gw4x90.analogIOControl.setVoltage(2, 1, float(sys.argv[2]))
-gw4x90.analogIOControl.setVoltage(2, 2, float(sys.argv[3]))
-gw4x90.analogIOControl.setVoltage(2, 3, float(sys.argv[4]))
+gw4x90.analogIOControl.setVoltage(0, 0, float(sys.argv[1]))
+gw4x90.analogIOControl.setVoltage(0, 1, float(sys.argv[2]))
+gw4x90.analogIOControl.setVoltage(0, 2, float(sys.argv[3]))
+gw4x90.analogIOControl.setVoltage(0, 3, float(sys.argv[4]))
 print('Inputs: {},{},{},{}'.format(inputs[0].getInput(),inputs[1].getInput(),inputs[2].getInput(),inputs[3].getInput()))
+ """
+# GW4100 GPI test end
+
+# set analog tester outputs to 0 (mandatory)
+gw4x90.analogIOControl.setVoltage(1, 0, 0)
+gw4x90.analogIOControl.setVoltage(1, 1, 0)
+
+gpios = []
+for i in range(2):
+    gpios.append(gw4x00.digitalIOControl.GW4100Gpio(i))
+
+gpios[0].setOutput("high")
+gpios[1].setOutput("low")
+
+print('Inputs: {},{}'.format(gw4x90.analogIOControl.readGPIOVoltage(0), gw4x90.analogIOControl.readGPIOVoltage(1) ))
+
+gpios[0].setOutput("low")
+gpios[1].setOutput("high")
+
+print('Inputs: {},{}'.format(gw4x90.analogIOControl.readGPIOVoltage(0), gw4x90.analogIOControl.readGPIOVoltage(1) ))
+
+gpios[0].setOutput("tri-state")
+gpios[1].setOutput("tri-state")
+
+print('Inputs: {},{}'.format(gw4x90.analogIOControl.readGPIOVoltage(0), gw4x90.analogIOControl.readGPIOVoltage(1) ))
+
+gpios[0].activatePullup(True)
+gpios[1].activatePullup(True)
+
+print('Inputs: {},{}'.format(gw4x90.analogIOControl.readGPIOVoltage(0), gw4x90.analogIOControl.readGPIOVoltage(1) ))
+
+gpios[0].activatePullup(False)
+gpios[1].activatePullup(False)
+gpios[0].setOutput("input")
+gpios[1].setOutput("input")
+
+gw4x90.analogIOControl.setVoltage(1, 0, 2)
+gw4x90.analogIOControl.setVoltage(1, 1, 10)
+
+print('GW4100 Inputs: {},{}'.format(gpios[0].getInput(),gpios[1].getInput() ))
+
+gw4x90.analogIOControl.setVoltage(1, 0, 8)
+gw4x90.analogIOControl.setVoltage(1, 1, 3)
+
+print('GW4100 Inputs: {},{}'.format(gpios[0].getInput(),gpios[1].getInput() ))
+
+gw4x90.analogIOControl.setVoltage(1, 0, 0)
+gw4x90.analogIOControl.setVoltage(1, 1, 0)
