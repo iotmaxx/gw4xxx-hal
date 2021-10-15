@@ -199,3 +199,11 @@ def writeExpansionBoardEEPROM(commonSection, specificSection=None):
             writeCommonSection(EXPANSION_BOARD_EEPROM, theData)    
 
     # no expansion boards with specific section defined yet so ignore parameter
+
+def getDeviceType():
+    deviceData = readDeviceData()
+    deviceType = deviceData['Main']['ProductName']
+    if 'Expansion' in deviceData:
+        deviceType = deviceType[0:4] + deviceData['Expansion']['ProductName'][-2:]
+    return deviceType
+
