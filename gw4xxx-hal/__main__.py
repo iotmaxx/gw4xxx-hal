@@ -3,6 +3,7 @@ import gw4x90.analogIOControl
 import gw4x90.currentLoopControl
 import gw4x90.digitalInputControl
 import gw4x00.digitalIOControl
+import gw4x01.adcControl
 import sys 
 
 gw4100CommonData = {
@@ -101,6 +102,7 @@ gw4100CommonDataTest1 = {
 #print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
 
 #gw4x90.analogIOControl.setVoltage(1, 2, float(sys.argv[1]))
+
 #print (gw4x90.digitalInputControl.getInput(0))
 #gw4x90.currentLoopControl.setOutputCurrent(0,float(sys.argv[1]))
 #print(gw4x90.analogIOControl.readCurrentLoopInput())
@@ -167,4 +169,13 @@ gw4x90.analogIOControl.setVoltage(1, 0, 0)
 gw4x90.analogIOControl.setVoltage(1, 1, 0)
  """
  # GW4100 GPIO test end
-gw4xxx.gw4xxx_eeprom.getDeviceType()
+theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
+if theType == 'GW4199':
+    print('Tester')
+    gw4x90.currentLoopControl.setOutputCurrent(int(sys.argv[1]),float(sys.argv[2]))
+elif theType == 'GW4101':
+    print('DUT')
+    theADCControl = gw4x01.adcControl.GW4x01ADC()
+    print(theADCControl.readCurrentLoop(int(sys.argv[1])))
+
+
