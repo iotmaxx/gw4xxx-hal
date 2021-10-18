@@ -77,3 +77,44 @@ class GW4x01ADC:
         convResult *= 2
 
         return convResult
+
+    def readRTDValue(self, channel) -> float:
+        self._selectChannel(channel)
+        #  		Reg 0:
+        #		7-4: 0000: AIN P = AIN0, AIN N = AIN1 (default)
+        #		3-1: 000:	Gain = 1
+        #		0: 	0:		PGA disabled
+        #		Reg1: Reset value 0x00
+        #
+        #		Reg2:
+        #		7-6: 01: External reference selected using dedicated REFP0 and REFN0 inputs
+        #		5-4: 01: Simultaneous 50-Hz and 60-Hz rejection
+        #		3:    0: Switch is always open (default)
+        #		2-0:100: 250 μA
+        #
+        #		Reg3:
+        #		7-5: 100: IDAC1 connected to AIN3/REFN1
+        #		4-2: 000: IDAC2 disabled (default)
+        #		1:     0: Only the dedicated DRDY pin is used to indicate when data are ready (default)
+        #		0:     0: Reserved
+        self.spi.xfer2([ 0x43, 0x01, 0x00, 0x54, 0x80 ])
+        #    spi.xfer2([ 0x43, 0x00, 0x00, 0x53, 0x80 ])
+        time.sleep(0.1)
+        result=self.spi.xfer2([ 0xFF, 0xFF, 0xFF ])
+        #    print('Result:{:02x}{:02x}{:02x}'.format(result[0], result[1], result[2]))
+
+        #		Reg3:
+        #		7-5: 000: IDAC1 disabled (default)
+        #		4-2: 000: IDAC2 disabled (default)
+        #		1:     0: Only the dedicated DRDY pin is used to indicate when data are ready (default)
+        #		0:     0: Reserved
+        self.spi.xfer2([ 0x4C, 0x00 ])
+
+        convResult = (result[0]<<16)+(result[1]<<8)+result[2]
+        #   print('Result:{:d}'.format(convResult))
+
+        convResult *= 2000.0
+        convResult /= 0x7FFFFF
+        #   print('Result:{:f}'.format(convResult))
+
+        return convResult
