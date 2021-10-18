@@ -169,6 +169,9 @@ gw4x90.analogIOControl.setVoltage(1, 0, 0)
 gw4x90.analogIOControl.setVoltage(1, 1, 0)
  """
  # GW4100 GPIO test end
+
+ # GW4101 current loop input tests start
+""" 
 theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
 if theType == 'GW4199':
     print('Tester')
@@ -177,5 +180,16 @@ elif theType == 'GW4101':
     print('DUT')
     theADCControl = gw4x01.adcControl.GW4x01ADC()
     print(theADCControl.readCurrentLoop(int(sys.argv[1])))
+ """
+ # GW4101 current loop input tests end
+
+theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
+if theType == 'GW4199':
+    print('Tester')
+elif theType == 'GW4101':
+    print('DUT')
+    theADCControl = gw4x01.adcControl.GW4x01ADC()
+    for i in range (4):
+        print(theADCControl.readRTDValue(i))
 
 
