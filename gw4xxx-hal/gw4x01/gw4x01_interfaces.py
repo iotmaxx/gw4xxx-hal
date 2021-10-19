@@ -25,5 +25,9 @@ gw4x01Interfaces = {
         "device": 0,
         "max_speed": 500000,
         "mode": 0b01
+    },
+    "I2C": {
+        "bus": 3,
+        "MCP4176Address": 0x60
     }
 }

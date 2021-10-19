@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import gpiod
 import spidev
 import time
+from smbus2 import SMBus, i2c_msg
 from gw4x01.gw4x01_interfaces import gw4x01Interfaces
 
 class GW4x01ADC:
@@ -118,3 +119,51 @@ class GW4x01ADC:
         #   print('Result:{:f}'.format(convResult))
 
         return convResult
+
+    # set output current
+    # current: current [mA] to be set
+    def setOutputCurrent(self, current):
+        # MCP4716 command:
+        # byte 0
+        # [7:5]: 010    write volatile memory command
+        # [4:3]:  11    Vref pin (buffered) as reference
+        # [2:1]:  00    not powered down
+        # [0]:     0    gain 1x
+        #
+        # byte [1:2]: D09 D08 D07 D06 D05 D04 D03 D02 D01 D00 X X X X X X
+        currentCode = int(1024 * current / 20.2)
+        data = [ 0x58, (currentCode>>2)&0xFF, (currentCode<<6)&0xFF ]
+
+        with SMBus(gw4x01Interfaces["I2C"]["bus"]) as bus:
+    #        hex_string = "".join("%02x " % b for b in data)
+    #        print("write: "+hex_string)
+            msg = i2c_msg.write(gw4x01Interfaces["I2C"]["MCP4176Address"], data)
+            bus.i2c_rdwr(msg)
+    #        msg = i2c_msg.read(i2c_chip_addresses[channel], 6)
+    #        bus.i2c_rdwr(msg)
+    #        block = list(msg)
+    #        hex_string = "".join("%02x " % b for b in block)
+    #        print("read: "+hex_string)
+
+    # power down selected channel
+    def powerDownChannel(self):
+        # MCP4716 command:
+        # byte 0
+        # [7:5]: 100    write volatile configuration bits
+        # [4:3]:  11    Vref pin (buffered) as reference
+        # [2:1]:  10    Powered Down - VOUT is loaded with 100 kΩ resistor to ground.
+        # [0]:     0    gain 1x
+        data = [ 0x9C ]
+
+        with SMBus(gw4x01Interfaces["I2C"]["bus"]) as bus:
+            msg = i2c_msg.write(gw4x01Interfaces["I2C"]["MCP4176Address"], data)
+            bus.i2c_rdwr(msg)
+
+    # get output current on selected channel
+    def getOutputCurrent(self):
+        with SMBus(gw4x01Interfaces["I2C"]["bus"]) as bus:
+            msg = i2c_msg.read(gw4x01Interfaces["I2C"]["MCP4176Address"], 6)
+            bus.i2c_rdwr(msg)
+        response = list(msg)
+        value = response[1]<<2 | response[2]>>6
+        return value*20.2/1024
