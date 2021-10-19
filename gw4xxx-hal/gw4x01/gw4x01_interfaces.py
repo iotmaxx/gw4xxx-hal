@@ -29,5 +29,21 @@ gw4x01Interfaces = {
     "I2C": {
         "bus": 3,
         "MCP4176Address": 0x60
-    }
+    },
+    "inputs" : [
+        { "gpiochip": 6, "gpioline":  5 },
+        { "gpiochip": 6, "gpioline": 11 },
+        { "gpiochip": 6, "gpioline":  2 },
+        { "gpiochip": 6, "gpioline":  6 },
+    ],
+    "isoInputs" : [
+        { "gpiochip": 5, "gpioline": 16 },
+        { "gpiochip": 5, "gpioline": 14 },
+        { "gpiochip": 5, "gpioline": 12 },
+        { "gpiochip": 5, "gpioline": 17 },
+    ],
+    "isoOutputs" : [
+        { "gpiochip": 5, "gpioline": 18 },
+        { "gpiochip": 5, "gpioline": 13 },
+    ]    
 }
