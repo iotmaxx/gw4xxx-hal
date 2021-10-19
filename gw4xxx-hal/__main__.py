@@ -183,7 +183,9 @@ elif theType == 'GW4101':
  """
  # GW4101 current loop input tests end
 
+# GW4101 RTD test start
 theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
+""" 
 if theType == 'GW4199':
     print('Tester')
 elif theType == 'GW4101':
@@ -191,5 +193,17 @@ elif theType == 'GW4101':
     theADCControl = gw4x01.adcControl.GW4x01ADC()
     for i in range (4):
         print(theADCControl.readRTDValue(i))
+ """
+ # GW4101 RTD test end
 
+# GW4101 current loop output test start
+theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
+if theType == 'GW4199':
+    print('Tester')
+elif theType == 'GW4101':
+    print('DUT')
+    theADCControl = gw4x01.adcControl.GW4x01ADC()
+    theADCControl.setOutputCurrent(float(sys.argv[1]))
+    print("Current: {}".format(theADCControl.getOutputCurrent()))
+# GW4101 current loop output test end
 
