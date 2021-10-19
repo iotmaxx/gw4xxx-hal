@@ -200,6 +200,8 @@ elif theType == 'GW4101':
 theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
 if theType == 'GW4199':
     print('Tester')
+    print("Current: {}".format(gw4x90.analogIOControl.readCurrentLoopInput()))
+    print("1-wire voltage: {}".format(gw4x90.analogIOControl.readOneWireVoltage()))
 elif theType == 'GW4101':
     print('DUT')
     theADCControl = gw4x01.adcControl.GW4x01ADC()
