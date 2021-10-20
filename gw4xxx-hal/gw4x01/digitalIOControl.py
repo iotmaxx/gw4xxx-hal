@@ -66,6 +66,6 @@ class GW4x01IsoOutput:
 #        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
        
-    def getInput(self) -> int:
-        return self.gpioline.get_value()
+    def setOutput(self, value):
+        self.gpioline.set_value(value)
 
