@@ -212,7 +212,8 @@ elif theType == 'GW4101':
  """
  # GW4101 current loop output test end
 
-# GW4101 digital io tests start
+# GW4101 iso input tests start
+""" 
 theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
 if theType == 'GW4199':
     print('Tester')
@@ -220,14 +221,36 @@ if theType == 'GW4199':
     gw4x90.analogIOControl.setVoltage(3,1,0)
     gw4x90.analogIOControl.setVoltage(3,2,10)
     gw4x90.analogIOControl.setVoltage(3,3,0)
-    # add GW4101 iso out and digital in
 elif theType == 'GW4101':
     print('DUT')
-    theIsoOutputs = [
+    theIsoInputs = [
         gw4x01.digitalIOControl.GW4x01IsoInput(0),
         gw4x01.digitalIOControl.GW4x01IsoInput(1),
         gw4x01.digitalIOControl.GW4x01IsoInput(2),
         gw4x01.digitalIOControl.GW4x01IsoInput(3)
     ]
-    print("Iso Inputs: {} {} {} {}".format(theIsoOutputs[0].getInput(),theIsoOutputs[1].getInput(),theIsoOutputs[2].getInput(),theIsoOutputs[3].getInput() ))
-# GW4101 digital io tests end
+    print("Iso Inputs: {} {} {} {}".format(theIsoInputs[0].getInput(),theIsoInputs[1].getInput(),theIsoInputs[2].getInput(),theIsoInputs[3].getInput() ))
+ """
+# GW4101 iso input tests end
+
+# GW4101 iso output tests start
+theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
+if theType == 'GW4199':
+    print('Tester')
+    gw4x90.analogIOControl.setVoltage(1,2,0)
+    gw4x90.analogIOControl.setVoltage(1,3,0)
+    print("Inputs: {} {}".format(gw4x90.digitalInputControl.getInput(0), gw4x90.digitalInputControl.getInput(1)))
+    gw4x90.analogIOControl.setVoltage(1,2,0)
+    gw4x90.analogIOControl.setVoltage(1,3,0)
+    # add GW4101 iso out and digital in
+elif theType == 'GW4101':
+    print('DUT')
+    theIsoOutputs = [
+        gw4x01.digitalIOControl.GW4x01IsoOutput(0),
+        gw4x01.digitalIOControl.GW4x01IsoOutput(1),
+    ]
+    theIsoOutputs[0].setOutput(1)
+    theIsoOutputs[1].setOutput(1)    
+# GW4101 iso output tests end
+
+# add GW4101 digital in
