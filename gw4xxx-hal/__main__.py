@@ -4,6 +4,7 @@ import gw4x90.currentLoopControl
 import gw4x90.digitalInputControl
 import gw4x00.digitalIOControl
 import gw4x01.adcControl
+import gw4x01.digitalIOControl
 import sys 
 
 gw4100CommonData = {
@@ -91,7 +92,7 @@ gw4100CommonDataTest1 = {
 
 #gw4xxx.gw4xxx_eeprom.writeExpansionBoardEEPROM(gw4x01CommonData)
 
-#print( gw4xxx.gw4xxx_eeprom.readExpansionBoardEEPROM() )
+#print( gw4xxx.gw4xxx_eeprom.readExptheIsoOutputs[0].getInput(),ansionBoardEEPROM() )
 
 #gw4x90.currentLoopControl.setOutputCurrent(int(sys.argv[1]),float(sys.argv[2]))
 
@@ -99,7 +100,7 @@ gw4100CommonDataTest1 = {
 
 #gw4x90.currentLoopControl.powerDownChannel(int(sys.argv[1]))
 
-#print(gw4x90.currentLoopControl.getOutputCurrent(int(sys.argv[1])))
+#print(gw4x90.currentLoopControl.gettheIsoOutputs[0].getInput(),OutputCurrent(int(sys.argv[1])))
 
 #gw4x90.analogIOControl.setVoltage(1, 2, float(sys.argv[1]))
 
@@ -197,6 +198,7 @@ elif theType == 'GW4101':
  # GW4101 RTD test end
 
 # GW4101 current loop output test start
+""" 
 theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
 if theType == 'GW4199':
     print('Tester')
@@ -207,5 +209,25 @@ elif theType == 'GW4101':
     theADCControl = gw4x01.adcControl.GW4x01ADC()
     theADCControl.setOutputCurrent(float(sys.argv[1]))
     print("Current: {}".format(theADCControl.getOutputCurrent()))
-# GW4101 current loop output test end
+ """
+ # GW4101 current loop output test end
 
+# GW4101 digital io tests start
+theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
+if theType == 'GW4199':
+    print('Tester')
+    gw4x90.analogIOControl.setVoltage(3,0,10)
+    gw4x90.analogIOControl.setVoltage(3,1,0)
+    gw4x90.analogIOControl.setVoltage(3,2,10)
+    gw4x90.analogIOControl.setVoltage(3,3,0)
+    # add GW4101 iso out and digital in
+elif theType == 'GW4101':
+    print('DUT')
+    theIsoOutputs = [
+        gw4x01.digitalIOControl.GW4x01IsoInput(0),
+        gw4x01.digitalIOControl.GW4x01IsoInput(1),
+        gw4x01.digitalIOControl.GW4x01IsoInput(2),
+        gw4x01.digitalIOControl.GW4x01IsoInput(3)
+    ]
+    print("Iso Inputs: {} {} {} {}".format(theIsoOutputs[0].getInput(),theIsoOutputs[1].getInput(),theIsoOutputs[2].getInput(),theIsoOutputs[3].getInput() ))
+# GW4101 digital io tests end
