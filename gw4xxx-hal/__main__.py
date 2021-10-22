@@ -6,6 +6,8 @@ import gw4x00.digitalIOControl
 import gw4x01.adcControl
 import gw4x01.digitalIOControl
 import sys 
+import threading
+import time
 
 gw4100CommonData = {
     'SerialNumber': 'GW00002086',
@@ -256,6 +258,7 @@ elif theType == 'GW4101':
  # GW4101 iso output tests end
 
 # GW4101 digital in tests start
+""" 
 theType = gw4xxx.gw4xxx_eeprom.getDeviceType()
 if theType == 'GW4199':
     print('Tester')
@@ -272,4 +275,30 @@ elif theType == 'GW4101':
         gw4x01.digitalIOControl.GW4x01Input(3)
     ]
     print("Inputs: {} {} {} {}".format(theInputs[0].getInput(),theInputs[1].getInput(),theInputs[2].getInput(),theInputs[3].getInput() ))
-# GW4101 digital in tests end
+ """
+ # GW4101 digital in tests end
+
+# GW4100 counter test start
+gpio = gw4x00.digitalIOControl.GW4100Gpio(0)
+gpi = gw4x00.digitalIOControl.GW4100CounterInput(0)
+
+gpi.startCounter()
+
+def outputThread(numPulses, sleepTime):
+    for i in range(numPulses):
+        time.sleep(sleepTime/2)
+        gpio.setOutput("high")
+        time.sleep(sleepTime/2)
+        gpio.setOutput("low")
+
+x = threading.Thread(target=outputThread, args=(int(sys.argv[1]),float(sys.argv[2],)))
+x.start()
+print("Counter start: {}".format(gpi.getCounter()))
+time.sleep(0.01)
+print("Counter  0.01s: {}".format(gpi.getCounter()))
+time.sleep(0.09)
+print("Counter  0.1s: {}".format(gpi.getCounter()))
+x.join()
+print("Counter   end: {}".format(gpi.getCounter()))
+
+# GW4100 counter test end
