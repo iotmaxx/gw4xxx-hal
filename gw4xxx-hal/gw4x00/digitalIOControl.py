@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
+import threading
 from gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
 
 # GW4x00 input control
@@ -24,13 +25,40 @@ class GW4100Input:
         if input >= len(gw4x00Interfaces["inputs"]):
             raise IndexError
         self.input = input
-#        config = gpiod.line_request()
         chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
         self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
- #       config.consumer = consumer
- #       config.request_type = gpiod.line_request.DIRECTION_INPUT
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
        
+    def getInput(self) -> int:
+        return self.gpioline.get_value()
+
+# GW4x00 counter input control
+class GW4100CounterInput:
+    def __init__(self, input, consumer:str="gw4x00_io"):
+        if input >= len(gw4x00Interfaces["inputs"]):
+            raise IndexError
+        self.counter = 0
+        self.input = input
+        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
+        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
+        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_RISING_EDGE, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+
+    def startCounter(self):
+        self.counterThread = threading.Thread(target=self._counterThread)
+        self.counterThread.start()
+
+    def _counterThread(self):
+        while True:
+            if self.gpioline.event_wait(nsec=100000):
+                events = self.gpioline.event_read_multiple()
+                self.counter += len(events)
+
+    def getCounter(self):
+        return self.counter
+
+    def setCounter(self, value=0):
+        self.counter = value
+
     def getInput(self) -> int:
         return self.gpioline.get_value()
 
