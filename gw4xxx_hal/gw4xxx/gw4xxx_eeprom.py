@@ -136,8 +136,11 @@ def readMainBoardEEPROM():
 
 def readDeviceData():
     theData = { "Main" : readMainBoardEEPROM() }
+    deviceType = theData['Main']['ProductName']
     if hasExpansionBoard():
         theData["Expansion"] = readExpansionBoardEEPROM()
+        deviceType = deviceType[0:4] + theData['Expansion']['ProductName'][-2:]
+    theData["device"] = deviceType
     return theData
 
 def writeCommonSection(eepromFile, commonData):
