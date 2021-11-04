@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
 import threading
-from gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
+from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
+#from gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
 
 # GW4x00 input control
 class GW4100Input:
