@@ -19,7 +19,7 @@ import gpiod
 import spidev
 import time
 from smbus2 import SMBus, i2c_msg
-from gw4x01.gw4x01_interfaces import gw4x01Interfaces
+from gw4xxx_hal.gw4x01.gw4x01_interfaces import gw4x01Interfaces
 
 class GW4x01ADC:
     def __init__(self, consumer:str="gw4x01_adc"):
