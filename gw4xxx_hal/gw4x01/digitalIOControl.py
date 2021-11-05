@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
-from gw4x01.gw4x01_interfaces import gw4x01Interfaces
+from gw4xxx_hal.gw4x01.gw4x01_interfaces import gw4x01Interfaces
 
 # GW4x01 input control
 class GW4x01Input:
@@ -68,4 +68,7 @@ class GW4x01IsoOutput:
        
     def setOutput(self, value):
         self.gpioline.set_value(value)
+
+    def getOutput(self):
+        return self.gpioline.get_value()
 
