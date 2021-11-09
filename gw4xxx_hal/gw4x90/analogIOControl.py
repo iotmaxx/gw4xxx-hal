@@ -14,6 +14,18 @@ def check_valid_chip_channel(func):
         return func(chip, channel, *args, **kwargs)
     return inner
 
+def _get_flags(high_byte):
+    theFlags = {}
+    theFlags["vref"] = (high_byte & 1 << 7) > 0
+    theFlags["gain"] = (high_byte & 1 << 4) > 0
+    theFlags["power_state"] = (high_byte & 0b011 << 5) >> 5
+    return theFlags
+
+def _chunk(big_list, chunk_size):
+    """Divides a given list into `chunk_size` sized chunks"""
+    for i in range(0, len(big_list), chunk_size):
+        yield big_list[i : i + chunk_size]
+
 # set output voltage on analog output channels
 # Mapping:
 # chip# | channels [0:3]
@@ -34,6 +46,34 @@ def setVoltage(chip, channel, voltage):
 #        print("write: "+hex_string)
         msg = i2c_msg.write(i2c_MCP4728_addresses[chip], data)
         bus.i2c_rdwr(msg)
+
+
+# read voltage on all channels of a chip
+def getCurrentSettings(chip):
+    if chip >= len(i2c_MCP4728_addresses):
+        raise IndexError
+    with SMBus(i2c_bus) as bus:
+        msg = i2c_msg.read(i2c_MCP4728_addresses[chip],24)
+        bus.i2c_rdwr(msg)
+        dataRead = list(msg)
+#        hex_string = "".join("%02x " % b for b in dataRead)
+#        print("write: "+hex_string)
+        # stride is 6 because we get 6 bytes for each channel; 3 for the output regs
+        # and 3 for the eeprom. Here we only care about the output register so we throw out
+        # the eeprom values as 'n/a'
+        current_values = []
+        # pylint:disable=unused-variable
+        for header, high_byte, low_byte, na_1, na_2, na_3 in _chunk(dataRead, 6):
+            # pylint:enable=unused-variable
+            channel_values = {}
+            value = (high_byte & 0x0F) << 8 | low_byte
+            voltage = value * 8
+            channel_values['voltage'] = voltage / 1000
+            channel_values.update(_get_flags(high_byte))
+            current_values.append(channel_values)
+        return current_values
+
+
 
 # ADS1015 read analog voltage on ADC input
 # [15]:     1           start conversion
