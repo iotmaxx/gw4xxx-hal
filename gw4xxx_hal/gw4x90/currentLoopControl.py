@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from smbus2 import SMBus, i2c_msg
 import sys
-from gw4xxx.exceptions import ChannelPoweredDownError
+from gw4xxx_hal.gw4xxx.exceptions import ChannelPoweredDownError
 
 i2c_bus = 3
 i2c_chip_addresses = [ 0x60, 0x61, 0x62, 0x63 ]
