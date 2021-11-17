@@ -20,6 +20,8 @@ import spidev
 import time
 from smbus2 import SMBus, i2c_msg
 from gw4xxx_hal.gw4x01.gw4x01_interfaces import gw4x01Interfaces
+from gw4xxx_hal.gw4xxx.exceptions import ChannelPoweredDownError
+
 
 class GW4x01ADC:
     def __init__(self, consumer:str="gw4x01_adc"):
@@ -159,11 +161,13 @@ class GW4x01ADC:
             msg = i2c_msg.write(gw4x01Interfaces["I2C"]["MCP4176Address"], data)
             bus.i2c_rdwr(msg)
 
-    # get output current on selected channel
+    # get output current 
     def getOutputCurrent(self):
         with SMBus(gw4x01Interfaces["I2C"]["bus"]) as bus:
             msg = i2c_msg.read(gw4x01Interfaces["I2C"]["MCP4176Address"], 6)
             bus.i2c_rdwr(msg)
         response = list(msg)
+        if (response[0] & 0x6) != 0x0:
+            raise ChannelPoweredDownError
         value = response[1]<<2 | response[2]>>6
         return value*20.2/1024
