@@ -33,8 +33,11 @@ class GW4x01ADC:
             self.ChannelSelectIOs.append(line)
         self.spi = spidev.SpiDev()
         self.spi.open(gw4x01Interfaces["SPI"]["bus"], gw4x01Interfaces["SPI"]["device"])
+        try:    # ignore error as it is caused by wrong initialization of cs_high, mode setting is applied as expected
+            self.spi.mode = gw4x01Interfaces["SPI"]["mode"]
+        except:
+            pass
         self.spi.max_speed_hz = gw4x01Interfaces["SPI"]["max_speed"]
-        self.spi.mode = gw4x01Interfaces["SPI"]["mode"]
         self.spi.xfer2([0x06])   # Reset
         time.sleep(0.1)
 
