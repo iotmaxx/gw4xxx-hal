@@ -26,8 +26,11 @@ EEPROM_MAGIC                    = 0xc4ec31b6
 EEPROM_SIZE                     = 8*1024
 EEPROM_COMMON_SECTION_SIZE      = 256
 EEPROM_SPECIFIC_SECTION_SIZE    = 256
-MAIN_BOARD_EEPROM       = '/sys/bus/i2c/devices/2-0050/eeprom'
-EXPANSION_BOARD_EEPROM  = '/sys/bus/i2c/devices/3-0050/eeprom'
+# todo: switch back to correct eeprom path
+#MAIN_BOARD_EEPROM       = '/sys/bus/i2c/devices/2-0050/eeprom'
+MAIN_BOARD_EEPROM       = '/data/eeprom.file'
+#EXPANSION_BOARD_EEPROM  = '/sys/bus/i2c/devices/3-0050/eeprom'
+EXPANSION_BOARD_EEPROM  = '/data/expEeprom.file'
 
 GW4xxxCommonSectionContent = { "Product", "ProductName", "SerialNumber", "Version", "Manufacturer", "TimeOfProduction" ,"Tester", "TestResult", "TimeOfTest", "OverlayName" }
 GW4x00SpecificSectionContent = { "MAC" }
@@ -159,7 +162,7 @@ def writeCommonSection(eepromFile, commonData):
     )
     u32CRC = Crc32.calc(myData[8:EEPROM_COMMON_SECTION_SIZE])
     pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
-    with open(eepromFile, "wb+") as f:
+    with open(eepromFile, "r+b") as f:
         f.write(myData)
         f.close()
 
@@ -170,7 +173,7 @@ def writeGW4x00SpecificSection(eepromFile, specificData):
     )
     u32CRC = Crc32.calc(myData[8:EEPROM_SPECIFIC_SECTION_SIZE])
     pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
-    with open(eepromFile, "wb+") as f:
+    with open(eepromFile, "r+b") as f:
         f.seek(EEPROM_COMMON_SECTION_SIZE,0)
         f.write(myData)
         f.close()
