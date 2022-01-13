@@ -27,10 +27,10 @@ EEPROM_SIZE                     = 8*1024
 EEPROM_COMMON_SECTION_SIZE      = 256
 EEPROM_SPECIFIC_SECTION_SIZE    = 256
 # todo: switch back to correct eeprom path
-#MAIN_BOARD_EEPROM       = '/sys/bus/i2c/devices/2-0050/eeprom'
-MAIN_BOARD_EEPROM       = '/data/eeprom.file'
-#EXPANSION_BOARD_EEPROM  = '/sys/bus/i2c/devices/3-0050/eeprom'
-EXPANSION_BOARD_EEPROM  = '/data/expEeprom.file'
+MAIN_BOARD_EEPROM       = '/sys/bus/i2c/devices/2-0050/eeprom'
+#MAIN_BOARD_EEPROM       = '/data/eeprom.file'
+EXPANSION_BOARD_EEPROM  = '/sys/bus/i2c/devices/3-0050/eeprom'
+#EXPANSION_BOARD_EEPROM  = '/data/expEeprom.file'
 
 GW4xxxCommonSectionContent = { "Product", "ProductName", "SerialNumber", "Version", "Manufacturer", "TimeOfProduction" ,"Tester", "TestResult", "TimeOfTest", "OverlayName" }
 GW4x00SpecificSectionContent = { "MAC" }
