@@ -35,6 +35,36 @@ class GW4x01Input:
     def getInput(self) -> int:
         return self.gpioline.get_value()
 
+# GW4x01 counter input control
+class GW4x01CounterInput:
+    def __init__(self, input, consumer:str="gw4x00_io"):
+        if input >= len(gw4x01Interfaces["inputs"]):
+            raise IndexError
+        self.counter = 0
+        self.input = input
+        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
+        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
+        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_RISING_EDGE)
+
+    def startCounter(self):
+        self.counterThread = threading.Thread(target=self._counterThread)
+        self.counterThread.start()
+
+    def _counterThread(self):
+        while True:
+            if self.gpioline.event_wait(nsec=100000):
+                events = self.gpioline.event_read_multiple()
+                self.counter += len(events)
+
+    def getCounter(self):
+        return self.counter
+
+    def setCounter(self, value=0):
+        self.counter = value
+
+    def getInput(self) -> int:
+        return self.gpioline.get_value()
+
 # GW4x01 isolated input control
 class GW4x01IsoInput:
     def __init__(self, input, consumer:str="gw4x01_io"):
