@@ -42,8 +42,8 @@ class GW4x01CounterInput:
             raise IndexError
         self.counter = 0
         self.input = input
-        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
-        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
+        chip = gpiod.Chip('{}'.format(gw4x01Interfaces["inputs"][input]["gpiochip"]))
+        self.gpioline = chip.get_line(gw4x01Interfaces["inputs"][input]["gpioline"])
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_RISING_EDGE)
 
     def startCounter(self):
