@@ -28,7 +28,8 @@ class GW4100Input:
         self.input = input
         chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
         self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
-        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
        
     def getInput(self) -> int:
         return self.gpioline.get_value()
