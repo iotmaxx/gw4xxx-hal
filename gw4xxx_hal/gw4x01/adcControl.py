@@ -161,7 +161,7 @@ class GW4x01ADC:
         self.spi.xfer2([ 0x4C, 0x00 ])
 
         convResult = (result[0]<<16)+(result[1]<<8)+result[2]
-        print('Result:{:d} ({:x})'.format(convResult,convResult))
+#        print('Result:{:d} ({:x})'.format(convResult,convResult))
 
         convResult *= 4500.0
         convResult /= 0x7FFFFF
