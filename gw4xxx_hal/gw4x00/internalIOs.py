@@ -30,9 +30,10 @@ import smbus2
 }
  """
 i2c_busses = { "I2C_CTRL" : 2}
-i2c_addresses = { "PMIC" : 0x5A }
+i2c_addresses = { "PMIC" : 0x5A, "USB_HUB": 0x08 }
 i2c_regs = {
-    "PMIC": { "REG9_VSET": 0x70, "REG9_CTRL": 0x71 }
+    "PMIC": { "REG3_VSET": 0x30, "REG3_CTRL": 0x32, "REG9_VSET": 0x70, "REG9_CTRL": 0x71 },
+    "USB_HUB": { "STAT_CMD": 0xFF }
 }
 
 def _antVoltageToCode(voltage):
@@ -69,3 +70,29 @@ def setGPSAntennaVoltage(voltage=3000):
             msg = smbus2.i2c_msg.write(i2c_addresses["PMIC"], data)
             bus.i2c_rdwr(msg)
 
+def gsmPowerOn(on=True):
+    with smbus2.SMBus(i2c_busses["I2C_CTRL"]) as bus:
+            if on:
+                data = [ i2c_regs["PMIC"]["REG3_VSET"], 0x3E ]
+            else:
+                data = [ i2c_regs["PMIC"]["REG3_VSET"], 0x00 ]
+#            hex_string = "".join("%02x " % b for b in data)
+#            print("write: "+hex_string)
+            msg = smbus2.i2c_msg.write(i2c_addresses["PMIC"], data)
+            bus.i2c_rdwr(msg)
+
+def readPMICReg(reg):
+    with smbus2.SMBus(i2c_busses["I2C_CTRL"]) as bus:
+        b = bus.read_byte_data(i2c_addresses["PMIC"], reg)
+    return b
+
+def usbHubReset():
+    with smbus2.SMBus(i2c_busses["I2C_CTRL"]) as bus:
+        data = [ i2c_regs["USB_HUB"]["STAT_CMD"], 0x02 ]
+        msg = smbus2.i2c_msg.write(i2c_addresses["PMIC"], data)
+        bus.i2c_rdwr(msg)
+
+def usbHubReadReg(reg):
+    with smbus2.SMBus(i2c_busses["I2C_CTRL"]) as bus:
+        b = bus.read_byte_data(i2c_addresses["USB_HUB"], reg)
+    return b
