@@ -40,7 +40,19 @@ commonDataFormat = '16sI4s16s16sBIBBI'
 specificDataFormat = '6s'
 versionDataFormat = '3Bx'
 
-
+gw4100NoEEPROMData = {
+    "Product" : 0,
+    "ProductName" : "Unknown",
+    "SerialNumber" : "Unknown",
+    "Version" : [ 0, 0, 0 ],
+    "Manufacturer" : 0,
+    "TimeOfProduction" : 0,
+    "Tester" : 0,
+    "TestResult" : 0,
+    "TimeOfTest" : 0,
+    "OverlayName" : "None",
+    "MAC" : [ 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF ]
+}
 
 def hasExpansionBoard():
     return os.path.isfile(EXPANSION_BOARD_EEPROM) 
@@ -133,8 +145,11 @@ def readExpansionBoardEEPROM():
 
 def readMainBoardEEPROM():
     eepromData = readEEPROM(MAIN_BOARD_EEPROM)
-    theData = decodeCommonSection(eepromData)
-    theData.update(decodeGW4x00SpecificSection(eepromData)) 
+    try:
+        theData = decodeCommonSection(eepromData)
+        theData.update(decodeGW4x00SpecificSection(eepromData)) 
+    except (WrongMagicError, ChecksumError) as error:
+        theData = gw4100NoEEPROMData
     return theData
 
 def readDeviceData():
