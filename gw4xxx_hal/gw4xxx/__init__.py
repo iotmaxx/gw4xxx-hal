@@ -1,1 +1,1 @@
-halVersion = "0.3.2"
+halVersion = "0.3.3"
