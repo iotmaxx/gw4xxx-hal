@@ -17,18 +17,41 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
 import smbus2
+import gpiod
+#import threading
+from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
 
-""" GW4x00_internalIOs = {
-    "CAN_TERM_EN_n" : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "SIM_ENABLE"    : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "SIM_SEL"       : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "PBSTAT_IRQ_n"  : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "ACT8847_IRQ_n" : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "RTC_INTA_n"    : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "USR_SWITCH_n"  : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-    "GSM_PWR_IND_n" : { "pin" : 0, "mode" : gpio.IN, "active_low": False  },
-}
- """
+# GW4x00 user button
+class GW4100UserButton:
+    def __init__(self, consumer:str="gw4x00_io"):
+        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["user_button"]["gpiochip"]))
+        self.gpioline = chip.get_line(gw4x00Interfaces["user_button"]["gpioline"])
+        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_BOTH_EDGES, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+        
+    def getState(self) -> int:
+        return self.gpioline.get_value()
+
+    def waitForButtonEvent(self, sec=1, nsec=0):
+        retVal = 'timeout'
+        if self.gpioline.event_wait(sec,nsec):
+            event = self.gpioline.event_read()
+            if event.type == event.RISING_EDGE:
+                retVal = 'pressed'
+            else:
+                retVal = 'released'
+        return retVal
+
+def setLEDon(led, on=True):
+    try:
+        brightnessFile = gw4x00Interfaces["LEDs"][led]+'brightness'
+    except:
+        raise IndexError
+    with open(brightnessFile,"w") as f:
+        if on:
+            f.write('255\n')
+        else:
+            f.write('0\n')
+
 i2c_busses = { "I2C_CTRL" : 2}
 i2c_addresses = { "PMIC" : 0x5A, "USB_HUB": 0x08 }
 i2c_regs = {
