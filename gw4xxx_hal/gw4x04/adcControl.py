@@ -56,7 +56,13 @@ class GW4x04ADC:
         # 3-1: 000:	Gain = 1
         # 0: 	0:		PGA enabled (can be disabled)
 
-        # Reg1: Reset value 0x00
+        # Reg1:
+        # 7-5: 000: 20 SPS
+        # 7-5: 100: 330 SPS
+        # 4-3:  00: Normal mode
+        # 2:     0: single shot
+        # 1:     0: disable temp sens
+        # 0:     0: Burn-out current sources off
 
         # Reg2:
         # 7-6: 00: Internal 2.048-V reference selected (default)
@@ -69,10 +75,11 @@ class GW4x04ADC:
         # 4-2: 000: IDAC2 disabled (default)
         # 1:     0: Only the dedicated DRDY pin is used to indicate when data are ready (default)
         # 0:     0: Reserved
-        self.spi.xfer2([ 0x43, 0xA0, 0x00, 0x10, 0x00 ])
-        time.sleep(0.1)
+        self.spi.xfer2([ 0x43, 0xA0, 0x80, 0x10, 0x00 ])
+#        self.spi.xfer2([ 0x43, 0xA0, 0x00, 0x10, 0x00 ])
+        time.sleep(0.01)
         self.spi.xfer2([0x08])   # Start conversion
-        time.sleep(0.1)
+        time.sleep(0.01)
         result=self.spi.xfer2([ 0xFF, 0xFF, 0xFF ])
 
         convResult = (result[0]<<16)+(result[1]<<8)+result[2]
@@ -90,7 +97,14 @@ class GW4x04ADC:
         #		7-4: 0000: AIN P = AIN0, AIN N = AIN1 (default)
         #		3-1: 000:	Gain = 1
         #		0: 	0:		PGA disabled
-        #		Reg1: Reset value 0x00
+        #
+        #       Reg1:
+        #       7-5: 000: 20 SPS
+        #       7-5: 100: 330 SPS
+        #       4-3:  00: Normal mode
+        #       2:     0: single shot
+        #       1:     0: disable temp sens
+        #       0:     0: Burn-out current sources off
         #
         #		Reg2:
         #		7-6: 01: External reference selected using dedicated REFP0 and REFN0 inputs
@@ -103,9 +117,11 @@ class GW4x04ADC:
         #		4-2: 000: IDAC2 disabled (default)
         #		1:     0: Only the dedicated DRDY pin is used to indicate when data are ready (default)
         #		0:     0: Reserved
-        self.spi.xfer2([ 0x43, 0x01, 0x00, 0x54, 0x80 ])
+        self.spi.xfer2([ 0x43, 0x01, 0x80, 0x54, 0x80 ])
         #    spi.xfer2([ 0x43, 0x00, 0x00, 0x53, 0x80 ])
-        time.sleep(0.1)
+        time.sleep(0.01)
+        self.spi.xfer2([0x08])   # Start conversion
+        time.sleep(0.01)
         result=self.spi.xfer2([ 0xFF, 0xFF, 0xFF ])
         #    print('Result:{:02x}{:02x}{:02x}'.format(result[0], result[1], result[2]))
 
