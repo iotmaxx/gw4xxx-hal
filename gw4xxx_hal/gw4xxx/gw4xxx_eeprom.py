@@ -54,6 +54,19 @@ gw4100NoEEPROMData = {
     "MAC" : [ 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF ]
 }
 
+gw4xxxNoEEPROMData = {
+    "Product" : 0,
+    "ProductName" : "Unknown",
+    "SerialNumber" : "Unknown",
+    "Version" : [ 0, 0, 0 ],
+    "Manufacturer" : 0,
+    "TimeOfProduction" : 0,
+    "Tester" : 0,
+    "TestResult" : 0,
+    "TimeOfTest" : 0,
+    "OverlayName" : "None",
+}
+
 def hasExpansionBoard():
     return os.path.isfile(EXPANSION_BOARD_EEPROM) 
 
@@ -63,7 +76,6 @@ def readEEPROM(eepromFile):
 
     with open(eepromFile, "rb") as f:
         eeprom = f.read(EEPROM_SIZE)
-        f.close()
 
     return eeprom
   
@@ -141,7 +153,12 @@ def decodeGW4x00SpecificSection(eeprom):
 
 def readExpansionBoardEEPROM():
     eepromData = readEEPROM(EXPANSION_BOARD_EEPROM)
-    return decodeCommonSection(eepromData)
+    try:
+        theData = decodeCommonSection(eepromData)
+#        print(f"Decode: {theData}")
+    except (WrongMagicError, ChecksumError) as error:
+        theData = gw4xxxNoEEPROMData
+    return theData
 
 def readMainBoardEEPROM():
     eepromData = readEEPROM(MAIN_BOARD_EEPROM)
@@ -179,7 +196,7 @@ def writeCommonSection(eepromFile, commonData):
     pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
     with open(eepromFile, "r+b") as f:
         f.write(myData)
-        f.close()
+#        f.close()
 
 def writeGW4x00SpecificSection(eepromFile, specificData):
     myData = bytearray(b'\xFF') * EEPROM_SPECIFIC_SECTION_SIZE
@@ -213,10 +230,15 @@ def writeExpansionBoardEEPROM(commonSection, specificSection=None):
     if commonSection != None:
         # all parameters set -> write whole section
         if GW4xxxCommonSectionContent <= set(commonSection):
+#            theData = readExpansionBoardEEPROM()
+#            theData.update(commonSection)
+#            print(f"write full section {theData}")
             writeCommonSection(EXPANSION_BOARD_EEPROM, commonSection)    
+#            writeCommonSection(EXPANSION_BOARD_EEPROM, theData)    
         else:    # not all parameters set -> update section
             theData = readExpansionBoardEEPROM()
             theData.update(commonSection)
+#            print(f"update section {theData}")
             writeCommonSection(EXPANSION_BOARD_EEPROM, theData)    
 
     # no expansion boards with specific section defined yet so ignore parameter
