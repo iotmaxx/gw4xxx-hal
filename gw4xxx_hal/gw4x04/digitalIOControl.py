@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
+import threading
 from gw4xxx_hal.gw4x04.gw4x04_interfaces import gw4x04Interfaces
 
 # GW4x04 input control
