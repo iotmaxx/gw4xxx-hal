@@ -86,10 +86,12 @@ def decodeCommonSection(eeprom):
     u8Major, u8Minor, u8Build = unpack('3Bx', uVersion)
 
     if u32Magic != EEPROM_MAGIC:
+#        print("Wrong magic c")
         raise WrongMagicError
 
     dataBlock = eeprom[8:256]
     if Crc32.calc(dataBlock) != u32Checksum:
+#        print("Wrong check c")
         raise ChecksumError
  
 #     print('Common data:')
@@ -131,10 +133,12 @@ def decodeGW4x00SpecificSection(eeprom):
     u32Magic, u32Checksum, u8aMac = unpack(sectionHeaderFormat+specificDataFormat, specificData)
 
     if u32Magic != EEPROM_MAGIC:
+#        print("Wrong magic s")
         raise WrongMagicError
 
     dataBlock = eeprom[256+8:256+256]
     if Crc32.calc(dataBlock) != u32Checksum:
+#        print("Wrong check s")
         raise ChecksumError
 
  #   print('Specific data:')
