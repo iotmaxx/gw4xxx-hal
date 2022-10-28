@@ -48,7 +48,7 @@ class GW4x04CounterInput:
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_RISING_EDGE, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
 
     def startCounter(self):
-        self.counterThread = threading.Thread(target=self._counterThread)
+        self.counterThread = threading.Thread(name=f'Gw4x04 input {self.input}', target=self._counterThread, daemon=True)
         self.counterThread.start()
 
     def _counterThread(self):
