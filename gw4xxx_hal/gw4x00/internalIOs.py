@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import gpiod
 import smbus2
 import gpiod
+import time
 #import threading
 from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
 
@@ -51,6 +52,35 @@ def setLEDon(led, on=True):
             f.write('255\n')
         else:
             f.write('0\n')
+
+# GW4100 internal I/Os
+class GW4100Internal:
+    def __init__(self, consumer:str="gw4x00_io"):
+        self.gpiolines = {}
+#    "sim_enable":       { "gpiochip": 2, "gpioline": 25 },
+#    "sim_select":       { "gpiochip": 3, "gpioline": 16 },
+#    "CAN_term_en_n":    { "gpiochip": 3, "gpioline": 12 },
+#    "GSM_power_ind":    { "gpiochip": 3, "gpioline": 19 },
+        for gpioline in ["sim_enable", "sim_select", "CAN_term_en_n", "GSM_power_ind"]:
+            chip = gpiod.Chip('{}'.format(gw4x00Interfaces[gpioline]["gpiochip"]))
+            self.gpiolines[gpioline] = chip.get_line(gw4x00Interfaces[gpioline]["gpioline"])
+        self.gpiolines["CAN_term_en_n"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
+#        self.gpiolines["sim_select"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
+#        self.gpiolines["sim_enable"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=1)
+        self.gpiolines["GSM_power_ind"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
+
+    def enableCanTermResistor(self,enable=True):
+        self.gpiolines["CAN_term_en_n"].set_value(not enable)
+
+#    def selectMiniNotMicroSIM(miniSIM=True):
+#        self.gpiolines["sim_enable"].set_value(0)
+#        time.sleep(0.1)
+#        self.gpiolines["sim_select"].set_value(not miniSIM)
+#        time.sleep(0.1)
+#        self.gpiolines["sim_enable"].set_value(1)
+
+    def isGSMOn(self):
+        return self.gpiolines["GSM_power_ind"].get_value() == 0
 
 i2c_busses = { "I2C_CTRL" : 2}
 i2c_addresses = { "PMIC" : 0x5A, "USB_HUB": 0x08 }
