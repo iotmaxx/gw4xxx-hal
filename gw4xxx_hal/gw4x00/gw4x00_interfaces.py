@@ -33,6 +33,7 @@ gw4x00Interfaces = {
     "PBSTAT_IRQ_n":     { "gpiochip": 1, "gpioline":  1 },
     "ACT8847_IRQ_n":    { "gpiochip": 2, "gpioline": 26 },
     "RTC_INTA_n":       { "gpiochip": 1, "gpioline": 29 },
+    "usb_power":        { "gpiochip": 0, "gpioline":  7 },
 }
 
 gw4x00GpioState = { "high", "low", "tri-state", "input" }

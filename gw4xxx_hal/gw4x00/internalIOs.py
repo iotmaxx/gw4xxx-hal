@@ -53,6 +53,19 @@ def setLEDon(led, on=True):
         else:
             f.write('0\n')
 
+class GW4100USBPower:
+    def __init__(self, consumer:str="gw4x00_io"):
+        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["usb_power"]["gpiochip"]))
+        self.gpioline = chip.get_line(gw4x00Interfaces["usb_power"]["gpioline"])
+        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=1)
+
+    def resetUSB(self):
+        self.gpioline.set_value(0)
+        time.sleep(0.5)
+        self.gpioline.set_value(1)
+        time.sleep(0.5)
+
+
 # GW4100 internal I/Os
 class GW4100Internal:
     def __init__(self, consumer:str="gw4x00_io"):
