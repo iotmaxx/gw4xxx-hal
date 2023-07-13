@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
 import smbus2
-import gpiod
 import time
 #import threading
 from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
@@ -59,11 +58,14 @@ class GW4100USBPower:
         self.gpioline = chip.get_line(gw4x00Interfaces["usb_power"]["gpioline"])
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=1)
 
-    def resetUSB(self):
+    def usbReset(self):
         self.gpioline.set_value(0)
         time.sleep(0.5)
         self.gpioline.set_value(1)
         time.sleep(0.5)
+
+    def usbPowerOn(self, on=True):
+        self.gpioline.set_value(on)
 
 
 # GW4100 internal I/Os
