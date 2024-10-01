@@ -204,7 +204,7 @@ def writeCommonSection(eepromFile, commonData):
 def writeGW4x00SpecificSection(eepromFile, specificData):
     myData = bytearray(b'\xFF') * EEPROM_SPECIFIC_SECTION_SIZE
     pack_into(specificDataFormat, myData, 8, 
-        bytearray(specificData['MAC'],0)
+        bytearray(specificData['MAC']),0
     )
     u32CRC = Crc32.calc(myData[8:EEPROM_SPECIFIC_SECTION_SIZE])
     pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
