@@ -37,7 +37,7 @@ GW4x00SpecificSectionContent = { "MAC" }
 
 sectionHeaderFormat = 'II'
 commonDataFormat = '16sI4s16s16sBIBBI'
-specificDataFormat = '6s'
+specificDataFormat = '6sI'
 versionDataFormat = '3Bx'
 
 gw4100NoEEPROMData = {
@@ -130,7 +130,7 @@ def decodeCommonSection(eeprom):
 def decodeGW4x00SpecificSection(eeprom):
 
     specificData = eeprom[256:256+calcsize(sectionHeaderFormat+specificDataFormat)]
-    u32Magic, u32Checksum, u8aMac = unpack(sectionHeaderFormat+specificDataFormat, specificData)
+    u32Magic, u32Checksum, u8aMac, u32Padding = unpack(sectionHeaderFormat+specificDataFormat, specificData)
 
     if u32Magic != EEPROM_MAGIC:
 #        print("Wrong magic s")
@@ -198,21 +198,19 @@ def writeCommonSection(eepromFile, commonData):
     )
     u32CRC = Crc32.calc(myData[8:EEPROM_COMMON_SECTION_SIZE])
     pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
-    with open(eepromFile, "r+b") as f:
+    with open(eepromFile, "rb+") as f:
         f.write(myData)
-#        f.close()
 
 def writeGW4x00SpecificSection(eepromFile, specificData):
     myData = bytearray(b'\xFF') * EEPROM_SPECIFIC_SECTION_SIZE
     pack_into(specificDataFormat, myData, 8, 
-        bytearray(specificData['MAC'])
+        bytearray(specificData['MAC'],0)
     )
     u32CRC = Crc32.calc(myData[8:EEPROM_SPECIFIC_SECTION_SIZE])
     pack_into(sectionHeaderFormat, myData, 0, EEPROM_MAGIC, u32CRC)
-    with open(eepromFile, "r+b") as f:
+    with open(eepromFile, "rb+") as f:
         f.seek(EEPROM_COMMON_SECTION_SIZE,0)
         f.write(myData)
-        f.close()
  
 def writeMainBoardEEPROM(commonSection, specificSection=None):
     if commonSection != None:
