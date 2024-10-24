@@ -51,7 +51,8 @@ class GW4100CounterInput:
 
     def _counterThread(self):
         while True:
-            if self.gpioline.event_wait(nsec=100000):
+#            if self.gpioline.event_wait(nsec=100000):
+            if self.gpioline.event_wait(nsec=100000000):
                 events = self.gpioline.event_read_multiple()
                 self.counter += len(events)
 
