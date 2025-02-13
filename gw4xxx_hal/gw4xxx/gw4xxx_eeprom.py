@@ -26,7 +26,7 @@ EEPROM_MAGIC                    = 0xc4ec31b6
 EEPROM_SIZE                     = 8*1024
 EEPROM_COMMON_SECTION_SIZE      = 256
 EEPROM_SPECIFIC_SECTION_SIZE    = 256
-# todo: switch back to correct eeprom path
+
 MAIN_BOARD_EEPROM       = '/sys/bus/i2c/devices/2-0050/eeprom'
 #MAIN_BOARD_EEPROM       = '/data/eeprom.file'
 EXPANSION_BOARD_EEPROM  = '/sys/bus/i2c/devices/3-0050/eeprom'
@@ -156,13 +156,14 @@ def decodeGW4x00SpecificSection(eeprom):
     return theData
 
 def readExpansionBoardEEPROM():
+#    print("read expansion board eeprom")
     eepromData = readEEPROM(EXPANSION_BOARD_EEPROM)
     try:
         theData = decodeCommonSection(eepromData)
 #        print(f"Decode: {theData}")
     except (WrongMagicError, ChecksumError) as error:
         theData = gw4xxxNoEEPROMData
-    return theData
+    return theData.copy()
 
 def readMainBoardEEPROM():
     eepromData = readEEPROM(MAIN_BOARD_EEPROM)
@@ -171,7 +172,7 @@ def readMainBoardEEPROM():
         theData.update(decodeGW4x00SpecificSection(eepromData)) 
     except (WrongMagicError, ChecksumError) as error:
         theData = gw4100NoEEPROMData
-    return theData
+    return theData.copy()
 
 def readDeviceData():
     theData = { "Main" : readMainBoardEEPROM() }
@@ -229,6 +230,7 @@ def writeMainBoardEEPROM(commonSection, specificSection=None):
             pass
 
 def writeExpansionBoardEEPROM(commonSection, specificSection=None):
+#    print("Write expansion board eeprom")
     if commonSection != None:
         # all parameters set -> write whole section
         if GW4xxxCommonSectionContent <= set(commonSection):
@@ -240,7 +242,6 @@ def writeExpansionBoardEEPROM(commonSection, specificSection=None):
         else:    # not all parameters set -> update section
             theData = readExpansionBoardEEPROM()
             theData.update(commonSection)
-#            print(f"update section {theData}")
             writeCommonSection(EXPANSION_BOARD_EEPROM, theData)    
 
     # no expansion boards with specific section defined yet so ignore parameter
