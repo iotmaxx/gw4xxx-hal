@@ -1,0 +1,9 @@
+[Unit]
+Description=gateway ext usb power cycle on start
+
+[Service]
+Type=oneshot
+ExecStart=/data/p1/usb-pwr-cycle.py
+
+[Install]
+WantedBy=basic.target
