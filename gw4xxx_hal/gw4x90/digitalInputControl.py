@@ -15,24 +15,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gpiod
+#import gpiod
+from gw4xxx_hal.gw4xxx.libgpiod_wrapper import libgpiod
 
 inputLines = [ (5, 14), (5, 15) ]
 
 # channels:
 # 0: IN12
 # 1: IN13
-def getInput(channel):
+def getInput(channel, consumer:str="gw4x90_in"):
     if channel >= 2:            
         raise IndexError
     
 #    config = gpiod.line_request()
     chipNr, lineNr = inputLines[channel]
-    chip = gpiod.Chip('{}'.format(chipNr))
-    line = chip.get_line(lineNr)
+    line = libgpiod.getInputLine(chipNr, lineNr, consumer, active_low=True)
+
+#    chip = gpiod.Chip('{}'.format(chipNr))
+#    line = chip.get_line(lineNr)
  #   config.consumer = "gw4x90_io"
  #   config.request_type = gpiod.line_request.DIRECTION_INPUT
-    line.request(consumer="gw4x90_io", type=gpiod.Line.DIRECTION_INPUT, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
-    return line.get_value()
+#    line.request(consumer="gw4x90_io", type=gpiod.Line.DIRECTION_INPUT, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+    value = line.get_value()
+    line.release()
+    return value
 
 

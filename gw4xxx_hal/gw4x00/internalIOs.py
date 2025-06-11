@@ -22,9 +22,9 @@ import smbus2
 import time
 #import threading
 from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
-from gw4xxx_hal.gw4xxx.libgpiod_wrapper import getLibGpiod
+from gw4xxx_hal.gw4xxx.libgpiod_wrapper import libgpiod
 
-libgpiod = getLibGpiod()
+# libgpiod = getLibGpiod()
 
 # GW4x00 user button
 '''

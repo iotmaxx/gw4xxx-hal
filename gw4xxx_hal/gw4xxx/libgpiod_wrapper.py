@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gpiod
-from gpiod.line import Direction, Value, Edge
+from gpiod.line import Direction, Value, Edge, Bias
 from datetime import timedelta
 
 class LibgpiodWrapper:
@@ -24,6 +24,9 @@ class LibgpiodWrapper:
     FALLING = None
     BOTH = None
     NONE = None
+    PULL_NONE = None
+    PULL_UP = None
+    PULL_DOWN = None
 
     def getOutputLine(self, gpiochip_nr, line_offset, initial_value):
         pass
@@ -39,6 +42,9 @@ class Libgpiod2Wrapper(LibgpiodWrapper):
     FALLING = Edge.FALLING
     BOTH = Edge.BOTH
     NONE = Edge.NONE
+    PULL_NONE = Bias.DISABLED
+    PULL_UP = Bias.PULL_UP
+    PULL_DOWN = Bias.PULL_DOWN
 
     def getOutputLine(self, gpiochip_nr, line_offset, consumer, initial_value, active_low=False):
         if initial_value:
@@ -56,11 +62,11 @@ class Libgpiod2Wrapper(LibgpiodWrapper):
         )
         return Libgpio2LineWrapper(lines, line_offset)
 
-    def getInputLine(self, gpiochip_nr, line_offset, consumer, active_low=False):
+    def getInputLine(self, gpiochip_nr, line_offset, consumer, active_low=False, bias=PULL_NONE):
         lines = gpiod.request_lines(
             f"/dev/gpiochip{gpiochip_nr}",
             consumer=consumer,
-            config={line_offset: gpiod.LineSettings(direction=Direction.INPUT, active_low=active_low)},
+            config={line_offset: gpiod.LineSettings(direction=Direction.INPUT, active_low=active_low, bias=bias)},
         )
         return Libgpio2LineWrapper(lines, line_offset)
 
@@ -132,5 +138,19 @@ class Libgpio2LineWrapper(LibgpioLineWrapper):
         else:
             return Libgpio2Event(Libgpio2Event.FALLING_EDGE)
 
+    def event_read_multiple(self):
+        events = []
+        for event in self.lines.read_edge_events():
+            if event.event_type is event.Type.RISING_EDGE:
+                events.append(Libgpio2Event(Libgpio2Event.RISING_EDGE))
+            else:
+                events.append(Libgpio2Event(Libgpio2Event.FALLING_EDGE))
+        return events
+
+    def release(self):
+        self.lines.release()
+
 def getLibGpiod():
     return Libgpiod2Wrapper()
+
+libgpiod = Libgpiod2Wrapper()
