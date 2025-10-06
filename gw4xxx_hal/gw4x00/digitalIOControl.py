@@ -15,10 +15,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gpiod
+# import gpiod
 import threading
+import logging
 from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
 #from gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
+
+from gw4xxx_hal.gw4xxx.libgpiod_wrapper import libgpiod
+
+log = logging.getLogger(__name__)
+# libgpiod = getLibGpiod()
 
 # GW4x00 input control
 class GW4100Input:
@@ -26,10 +32,10 @@ class GW4100Input:
         if input >= len(gw4x00Interfaces["inputs"]):
             raise IndexError
         self.input = input
-        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
-        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
-        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
-#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
+        self.gpioline = libgpiod.getInputLine(gw4x00Interfaces["inputs"][input]["gpiochip"], gw4x00Interfaces["inputs"][input]["gpioline"], consumer)
+#        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
+#        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
+#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
        
     def getInput(self) -> int:
         return self.gpioline.get_value()
@@ -41,9 +47,10 @@ class GW4100CounterInput:
             raise IndexError
         self.counter = 0
         self.input = input
-        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
-        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
-        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_RISING_EDGE, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+        self.gpioline = libgpiod.getInterruptLine(gw4x00Interfaces["inputs"][input]["gpiochip"], gw4x00Interfaces["inputs"][input]["gpioline"], consumer,  active_low=True, edge=libgpiod.RISING)
+#        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["inputs"][input]["gpiochip"]))
+#        self.gpioline = chip.get_line(gw4x00Interfaces["inputs"][input]["gpioline"])
+#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_RISING_EDGE, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
 
     def startCounter(self):
         self.counterThread = threading.Thread(name=f'Gw4x00 input {self.input}',target=self._counterThread, daemon=True)
@@ -51,8 +58,7 @@ class GW4100CounterInput:
 
     def _counterThread(self):
         while True:
-#            if self.gpioline.event_wait(nsec=100000):
-            if self.gpioline.event_wait(nsec=100000000):
+            if self.gpioline.event_wait(sec=0, nsec=100000000):
                 events = self.gpioline.event_read_multiple()
                 self.counter += len(events)
 
@@ -73,22 +79,16 @@ class GW4100Gpio:
         self.gpioNr = gpioNr
         # create storage for outputs
         self.outputs = dict.fromkeys([ "highside", "lowside", "pullup"])
-#        config = gpiod.line_request()
         for output in [ "highside", "lowside", "pullup"]:
-            chip = gpiod.Chip('{}'.format(gw4x00Interfaces["gpios"][gpioNr][output]["gpiochip"]))
-            self.outputs[output] = chip.get_line(gw4x00Interfaces["gpios"][gpioNr][output]["gpioline"])
-
-#            config.consumer = consumer
-#            config.request_type = gpiod.line_request.DIRECTION_OUTPUT
-
-            self.outputs[output].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT)
+            self.outputs[output] = libgpiod.getOutputLine(gw4x00Interfaces["gpios"][gpioNr][output]["gpiochip"], gw4x00Interfaces["gpios"][gpioNr][output]["gpioline"], consumer, 0)
+#            chip = gpiod.Chip('{}'.format(gw4x00Interfaces["gpios"][gpioNr][output]["gpiochip"]))
+#            self.outputs[output] = chip.get_line(gw4x00Interfaces["gpios"][gpioNr][output]["gpioline"])
+#            self.outputs[output].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT)
         
-        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["gpios"][gpioNr]["input"]["gpiochip"]))
-        self.input = chip.get_line(gw4x00Interfaces["gpios"][gpioNr]["input"]["gpioline"])
-#        config.consumer = consumer
-#        config.request_type = gpiod.line_request.DIRECTION_INPUT
-#        config.flags = gpiod.line_request.FLAG_BIAS_PULL_UP
-        self.input.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
+        self.input = libgpiod.getInputLine(gw4x00Interfaces["gpios"][gpioNr]["input"]["gpiochip"], gw4x00Interfaces["gpios"][gpioNr]["input"]["gpioline"], consumer, bias=libgpiod.PULL_UP)
+#        chip = gpiod.Chip('{}'.format(gw4x00Interfaces["gpios"][gpioNr]["input"]["gpiochip"]))
+#        self.input = chip.get_line(gw4x00Interfaces["gpios"][gpioNr]["input"]["gpioline"])
+#        self.input.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
         self.setOutput(initState)
         self.activatePullup(pullup)
 

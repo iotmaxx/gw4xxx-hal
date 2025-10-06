@@ -15,21 +15,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gpiod
+# import gpiod
 import spidev
 import time
 from smbus2 import SMBus, i2c_msg
 from gw4xxx_hal.gw4x04.gw4x04_interfaces import gw4x04Interfaces
 from gw4xxx_hal.gw4xxx.exceptions import ChannelPoweredDownError
+from gw4xxx_hal.gw4xxx.libgpiod_wrapper import libgpiod
 
 
 class GW4x04ADC:
     def __init__(self, consumer:str="gw4x01_adc"):
         self.ChannelSelectIOs = []
         for i in range(2):
-            chip = gpiod.Chip('{}'.format(gw4x04Interfaces["ChannelSelectIOs"][i]["gpiochip"]))
-            line = chip.get_line(gw4x04Interfaces["ChannelSelectIOs"][i]["gpioline"])
-            line.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
+            line = libgpiod.getOutputLine(gw4x04Interfaces["ChannelSelectIOs"][i]["gpiochip"], gw4x04Interfaces["ChannelSelectIOs"][i]["gpioline"], consumer, 0)
+#            chip = gpiod.Chip('{}'.format(gw4x04Interfaces["ChannelSelectIOs"][i]["gpiochip"]))
+#            line = chip.get_line(gw4x04Interfaces["ChannelSelectIOs"][i]["gpioline"])
+#            line.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
             self.ChannelSelectIOs.append(line)
         self.spi = spidev.SpiDev()
         self.spi.open(gw4x04Interfaces["SPI"]["bus"], gw4x04Interfaces["SPI"]["device"])

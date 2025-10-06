@@ -15,8 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gpiod
+# import gpiod
 from gw4xxx_hal.gw4x02.gw4x02_interfaces import gw4x02Interfaces
+from gw4xxx_hal.gw4xxx.libgpiod_wrapper import libgpiod
 
 
 # GW4x02 isolated input control
@@ -25,13 +26,8 @@ class GW4x02IsoInput:
         if input >= len(gw4x02Interfaces["isoInputs"]):
             raise IndexError
         self.input = input
-#        config = gpiod.line_request()
-#        print(f'request chip {gw4x02Interfaces["isoInputs"][input]["gpiochip"]}, line {gw4x02Interfaces["isoInputs"][input]["gpioline"]}')
         chip = gpiod.Chip('{}'.format(gw4x02Interfaces["isoInputs"][input]["gpiochip"]))
         self.gpioline = chip.get_line(gw4x02Interfaces["isoInputs"][input]["gpioline"])
- #       config.consumer = consumer
- #       config.request_type = gpiod.line_request.DIRECTION_INPUT
-#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
        
     def getInput(self) -> int:
@@ -39,17 +35,14 @@ class GW4x02IsoInput:
 
 # GW4x02 isolated input control
 class GW4x02IsoOutput:
-    def __init__(self, input, consumer:str="gw4x02_io"):
-        if input >= len(gw4x02Interfaces["isoOutputs"]):
+    def __init__(self, output, consumer:str="gw4x02_io"):
+        if output >= len(gw4x02Interfaces["isoOutputs"]):
             raise IndexError
-        self.input = input
-#        config = gpiod.line_request()
-        chip = gpiod.Chip('{}'.format(gw4x02Interfaces["isoOutputs"][input]["gpiochip"]))
-        self.gpioline = chip.get_line(gw4x02Interfaces["isoOutputs"][input]["gpioline"])
- #       config.consumer = consumer
- #       config.request_type = gpiod.line_request.DIRECTION_INPUT
-#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
-        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
+        self.output = output
+        self.gpioline = libgpiod.getOutputLine(gw4x02Interfaces["isoOutputs"][gpioNr][output]["gpiochip"], gw4x02Interfaces["isoOutputs"][gpioNr][output]["gpioline"], consumer, 0)
+#        chip = gpiod.Chip('{}'.format(gw4x02Interfaces["isoOutputs"][output]["gpiochip"]))
+#        self.gpioline = chip.get_line(gw4x02Interfaces["isoOutputs"][output]["gpioline"])
+#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
        
     def setOutput(self, value):
         self.gpioline.set_value(value)

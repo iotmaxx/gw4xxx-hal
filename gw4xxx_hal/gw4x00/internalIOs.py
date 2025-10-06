@@ -1,6 +1,6 @@
 """ 
 gw4xxx-hal - IoTmaxx Gateway Hardware Abstraction Layer
-Copyright (C) 2021 IoTmaxx GmbH
+Copyright (C) 2021-2025 IoTmaxx GmbH
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,18 +15,41 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gpiod
+#import gpiod
+#from gpiod.line import Direction, Value
+
 import smbus2
 import time
 #import threading
 from gw4xxx_hal.gw4x00.gw4x00_interfaces import gw4x00Interfaces, gw4x00GpioState
+from gw4xxx_hal.gw4xxx.libgpiod_wrapper import libgpiod
+
+# libgpiod = getLibGpiod()
 
 # GW4x00 user button
+'''
 class GW4100UserButton:
     def __init__(self, consumer:str="gw4x00_io"):
         chip = gpiod.Chip('{}'.format(gw4x00Interfaces["user_button"]["gpiochip"]))
         self.gpioline = chip.get_line(gw4x00Interfaces["user_button"]["gpioline"])
         self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_EV_BOTH_EDGES, flags=gpiod.LINE_REQ_FLAG_ACTIVE_LOW)
+        
+    def getState(self) -> int:
+        return self.gpioline.get_value()
+
+    def waitForButtonEvent(self, sec=1, nsec=0):
+        retVal = 'timeout'
+        if self.gpioline.event_wait(sec,nsec):
+            event = self.gpioline.event_read()
+            if event.type == event.RISING_EDGE:
+                retVal = 'pressed'
+            else:
+                retVal = 'released'
+        return retVal
+'''
+class GW4100UserButton:
+    def __init__(self, consumer:str="gw4x00_io"):
+        self.gpioline = libgpiod.getInterruptLine(gw4x00Interfaces["user_button"]["gpiochip"], gw4x00Interfaces["user_button"]["gpioline"], consumer,  active_low=True)
         
     def getState(self) -> int:
         return self.gpioline.get_value()
@@ -51,7 +74,7 @@ def setLEDon(led, on=True):
             f.write('255\n')
         else:
             f.write('0\n')
-
+'''
 class GW4100USBPower:
     def __init__(self, consumer:str="gw4x00_io"):
         chip = gpiod.Chip('{}'.format(gw4x00Interfaces["usb_power"]["gpiochip"]))
@@ -66,9 +89,23 @@ class GW4100USBPower:
 
     def usbPowerOn(self, on=True):
         self.gpioline.set_value(on)
+'''
+class GW4100USBPower:
+    def __init__(self, consumer:str="gw4x00_io"):
+        self.gpioline = libgpiod.getOutputLine(gw4x00Interfaces["usb_power"]["gpiochip"], gw4x00Interfaces["usb_power"]["gpioline"], consumer, 1)
+
+    def usbReset(self):
+        self.gpioline.set_value(0)
+        time.sleep(0.5)
+        self.gpioline.set_value(1)
+        time.sleep(0.5)
+
+    def usbPowerOn(self, on=True):
+        self.gpioline.set_value(on)
 
 
 # GW4100 internal I/Os
+'''
 class GW4100Internal:
     def __init__(self, consumer:str="gw4x00_io"):
         self.gpiolines = {}
@@ -83,6 +120,31 @@ class GW4100Internal:
 #        self.gpiolines["sim_select"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
 #        self.gpiolines["sim_enable"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=1)
         self.gpiolines["GSM_power_ind"].request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
+
+    def enableCanTermResistor(self,enable=True):
+        self.gpiolines["CAN_term_en_n"].set_value(not enable)
+
+#    def selectMiniNotMicroSIM(miniSIM=True):
+#        self.gpiolines["sim_enable"].set_value(0)
+#        time.sleep(0.1)
+#        self.gpiolines["sim_select"].set_value(not miniSIM)
+#        time.sleep(0.1)
+#        self.gpiolines["sim_enable"].set_value(1)
+
+    def isGSMOn(self):
+        return self.gpiolines["GSM_power_ind"].get_value() == 0
+'''
+class GW4100Internal:
+    def __init__(self, consumer:str="gw4x00_io"):
+        self.gpiolines = {}
+#    "sim_enable":       { "gpiochip": 2, "gpioline": 25 },
+#    "sim_select":       { "gpiochip": 3, "gpioline": 16 },
+#    "CAN_term_en_n":    { "gpiochip": 3, "gpioline": 12 },
+#    "GSM_power_ind":    { "gpiochip": 3, "gpioline": 19 },
+#        self.gpiolines["sim_enable"] = libgpiod.getOutputLine(gw4x00Interfaces["sim_enable"]["gpiochip"], gw4x00Interfaces["sim_enable"]["gpioline"], consumer, 1)
+#        self.gpiolines["sim_select"] = libgpiod.getOutputLine(gw4x00Interfaces["sim_select"]["gpiochip"], gw4x00Interfaces["sim_select"]["gpioline"], consumer, 0)
+        self.gpiolines["CAN_term_en_n"] = libgpiod.getOutputLine(gw4x00Interfaces["CAN_term_en_n"]["gpiochip"], gw4x00Interfaces["CAN_term_en_n"]["gpioline"], consumer, 0)
+        self.gpiolines["GSM_power_ind"] = libgpiod.getInputLine(gw4x00Interfaces["GSM_power_ind"]["gpiochip"], gw4x00Interfaces["GSM_power_ind"]["gpioline"], consumer)
 
     def enableCanTermResistor(self,enable=True):
         self.gpiolines["CAN_term_en_n"].set_value(not enable)
