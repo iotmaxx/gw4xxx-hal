@@ -22,6 +22,8 @@ from struct import *
 from crccheck.crc import Crc32
 from .exceptions import *
 
+from .gw4xxx_helper import setSerialNumberAsHostname
+
 EEPROM_MAGIC                    = 0xc4ec31b6
 EEPROM_SIZE                     = 8*1024
 EEPROM_COMMON_SECTION_SIZE      = 256
@@ -215,13 +217,17 @@ def writeGW4x00SpecificSection(eepromFile, specificData):
  
 def writeMainBoardEEPROM(commonSection, specificSection=None):
     if commonSection != None:
-    # all parameters set -> write whole section
+        # new serial number -> set device name
+        setDeviceName = 'SerialNumber' in commonSection
+        # all parameters set -> write whole section
         if GW4xxxCommonSectionContent <= set(commonSection):
             writeCommonSection(MAIN_BOARD_EEPROM, commonSection)    
         else:    # not all parameters set -> update section
             theData = readMainBoardEEPROM()
             theData.update(commonSection)
             writeCommonSection(MAIN_BOARD_EEPROM, theData)    
+        if setDeviceName:
+            setSerialNumberAsHostname(commonSection['SerialNumber'])
 
     if specificSection != None:
         if GW4x00SpecificSectionContent <= set(specificSection):
