@@ -26,9 +26,10 @@ class GW4x02IsoInput:
         if input >= len(gw4x02Interfaces["isoInputs"]):
             raise IndexError
         self.input = input
-        chip = gpiod.Chip('{}'.format(gw4x02Interfaces["isoInputs"][input]["gpiochip"]))
-        self.gpioline = chip.get_line(gw4x02Interfaces["isoInputs"][input]["gpioline"])
-        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
+        self.gpioline = libgpiod.getInputLine(gw4x02Interfaces["isoInputs"][input]["gpiochip"], gw4x02Interfaces["isoInputs"][input]["gpioline"], consumer)
+#        chip = gpiod.Chip('{}'.format(gw4x02Interfaces["isoInputs"][input]["gpiochip"]))
+#        self.gpioline = chip.get_line(gw4x02Interfaces["isoInputs"][input]["gpioline"])
+#        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_IN)
        
     def getInput(self) -> int:
         return self.gpioline.get_value()
@@ -39,7 +40,7 @@ class GW4x02IsoOutput:
         if output >= len(gw4x02Interfaces["isoOutputs"]):
             raise IndexError
         self.output = output
-        self.gpioline = libgpiod.getOutputLine(gw4x02Interfaces["isoOutputs"][gpioNr][output]["gpiochip"], gw4x02Interfaces["isoOutputs"][gpioNr][output]["gpioline"], consumer, 0)
+        self.gpioline = libgpiod.getOutputLine(gw4x02Interfaces["isoOutputs"][output]["gpiochip"], gw4x02Interfaces["isoOutputs"][output]["gpioline"], consumer, 0)
 #        chip = gpiod.Chip('{}'.format(gw4x02Interfaces["isoOutputs"][output]["gpiochip"]))
 #        self.gpioline = chip.get_line(gw4x02Interfaces["isoOutputs"][output]["gpioline"])
 #        self.gpioline.request(consumer=consumer, type=gpiod.LINE_REQ_DIR_OUT, default_val=0)
